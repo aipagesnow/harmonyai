@@ -4,22 +4,24 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const getSupabase = (): SupabaseClient | null => {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-let supabase: SupabaseClient | null = null;
-
-if (SUPABASE_URL && SUPABASE_KEY) {
-    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-} else {
-    console.warn("⚠️ Supabase credentials missing. Falling back to in-memory mock DB.");
-}
+    if (SUPABASE_URL && SUPABASE_KEY) {
+        return createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+        console.warn("⚠️ Supabase credentials missing. Falling back to in-memory mock DB.");
+        return null;
+    }
+};
 
 // Fallback in-memory storage
 const mockChannelData: Record<string, ChannelHealth> = {};
 
 export const db = {
     logSentiment: async (teamId: string, channelId: string, score: SentimentScore, friction: boolean) => {
+        const supabase = getSupabase();
         if (supabase) {
             const { error } = await supabase.from('sentiment_logs').insert({
                 team_id: teamId,
@@ -48,6 +50,7 @@ export const db = {
     },
 
     getChannelHealth: async (channelId: string): Promise<ChannelHealth | null> => {
+        const supabase = getSupabase();
         if (supabase) {
             // Get average sentiment for last 7 days
             // Note: In a real app we'd use a postgres function or aggregation query.
@@ -78,6 +81,7 @@ export const db = {
 
     // Save/Update Workspace Installation
     saveWorkspace: async (teamId: string, teamName: string, accessToken: string) => {
+        const supabase = getSupabase();
         if (!supabase) return;
 
         const { error } = await supabase.from('workspaces').upsert({
@@ -91,6 +95,7 @@ export const db = {
     },
 
     getWorkspace: async (teamId: string) => {
+        const supabase = getSupabase();
         if (!supabase) return null;
         const { data } = await supabase.from('workspaces').select('*').eq('team_id', teamId).single();
         return data;

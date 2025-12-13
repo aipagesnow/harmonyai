@@ -4,9 +4,16 @@ import { createClient } from "@supabase/supabase-js";
 export const dynamic = 'force-dynamic';
 
 // Initialize Supabase Client
-const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Initialize Supabase Client
+// Lazy init inside handler to avoid build-time env var missing errors
+const getSupabase = () => {
+    const supabaseUrl = process.env.SUPABASE_URL || "";
+    const supabaseKey = process.env.SUPABASE_KEY || "";
+    if (!supabaseUrl || !supabaseKey) {
+        throw new Error("Supabase credentials missing");
+    }
+    return createClient(supabaseUrl, supabaseKey);
+};
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -43,6 +50,7 @@ export async function GET(request: NextRequest) {
 
         // Store in Supabase
         // table: workspaces (team_id, team_name, access_token, installation_meta)
+        const supabase = getSupabase();
         const { error: dbError } = await supabase.from("workspaces").upsert(
             {
                 team_id: data.team.id,
