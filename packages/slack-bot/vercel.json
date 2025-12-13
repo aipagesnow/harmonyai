@@ -1,0 +1,15 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/api/slack.ts",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/slack/events",
+            "dest": "src/api/slack.ts"
+        }
+    ]
+}

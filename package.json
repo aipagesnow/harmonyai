@@ -1,0 +1,22 @@
+{
+  "name": "harmony-ai-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "typescript": "^5.0.4",
+    "prettier": "^3.0.0",
+    "eslint": "^8.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
