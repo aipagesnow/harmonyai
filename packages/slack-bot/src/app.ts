@@ -8,9 +8,9 @@ import { db } from "./services/database";
 
 dotenv.config();
 
-// Mode selection: "http" (for Vercel/Serverless) or "socket" (local dev)
+// Mode selection: "http" (for Vercel/Serverless) or "socket" (local dev or explicit opt-in)
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
-const USE_SOCKET_MODE = !IS_PRODUCTION && process.env.SOCKET_MODE !== "false";
+const USE_SOCKET_MODE = process.env.SOCKET_MODE === "true" || (!IS_PRODUCTION && process.env.SOCKET_MODE !== "false");
 
 let app: App;
 let receiver: ExpressReceiver | undefined;
