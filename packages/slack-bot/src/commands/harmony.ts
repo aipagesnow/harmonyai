@@ -2,7 +2,34 @@ import { App } from "@slack/bolt";
 import { db } from "../services/database";
 
 export function registerCommands(app: App) {
-    app.command("/harmony", async ({ command, ack, respond, client }) => {
+    // Handle /harmony-pulse slash command
+    app.command('/harmony-pulse', async ({ command, ack, respond }) => {
+        console.log('🔥 /harmony-pulse triggered by', command.user_id, 'in channel', command.channel_id);
+
+        // Acknowledge immediately to prevent timeout/dispatch_failed
+        await ack();
+
+        // Send an ephemeral response visible only to the user
+        await respond({
+            response_type: 'ephemeral',
+            text: 'HarmonyAI is checking the pulse... 🚀 (real sentiment data coming soon!)'
+        });
+
+        // TODO: Later we will add the full sentiment aggregation and Supabase write here
+    });
+
+    // Handle /harmony slash command (optional fallback)
+    app.command('/harmony', async ({ command, ack, respond }) => {
+        console.log('🔥 /harmony triggered by', command.user_id);
+        await ack();
+        await respond({
+            response_type: 'ephemeral',
+            text: 'HarmonyAI received /harmony — use /harmony-pulse for the latest check! 🌟'
+        });
+    });
+
+    // Legacy /harmony with subcommands (keeping for backward compatibility)
+    app.command("/harmony-legacy", async ({ command, ack, respond, client }) => {
         await ack();
 
         // Parse subcommands: pulse, status, help, forecast, plan
