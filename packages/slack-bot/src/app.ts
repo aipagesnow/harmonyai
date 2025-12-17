@@ -74,6 +74,18 @@ if (USE_SOCKET_MODE) {
     });
 }
 
+// Handle Slack URL verification challenge (must return plain text)
+// This must be registered BEFORE any other listeners
+if (receiver) {
+    receiver.router.post('/slack/events', (req: any, res: any, next: any) => {
+        if (req.body?.type === 'url_verification') {
+            console.log('✅ Responding to Slack url_verification challenge');
+            return res.send(req.body.challenge);
+        }
+        next();
+    });
+}
+
 // Register Event Listeners
 registerMessageHandlers(app);
 registerEventHandlers(app);
