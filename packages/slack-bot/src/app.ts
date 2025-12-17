@@ -80,6 +80,7 @@ if (receiver) {
     receiver.router.post('/slack/events', (req: any, res: any, next: any) => {
         if (req.body?.type === 'url_verification') {
             console.log('✅ Responding to Slack url_verification challenge');
+            res.type('text/plain');
             return res.send(req.body.challenge);
         }
         next();
