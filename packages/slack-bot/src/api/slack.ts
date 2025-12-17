@@ -1,5 +1,7 @@
 import { receiver } from "../app";
 
+// URL verification challenge echo is implemented below - returns challenge for type: "url_verification"
+
 // Vercel Serverless Function Handler
 export default async function handler(req: any, res: any) {
     try {
