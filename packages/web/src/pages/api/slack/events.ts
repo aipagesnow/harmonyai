@@ -59,6 +59,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             (newStream as any).url = '/slack/events';
         }
 
+        if (!receiver) {
+            console.error("Slack receiver is not initialized. Ensure NODE_ENV is production or HTTP mode is enabled.");
+            return res.status(500).send("Internal Server Configuration Error");
+        }
+
         // Delegate to Bolt
         await receiver.requestHandler(newStream as any, res as any);
     } catch (error) {
