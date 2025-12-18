@@ -6,7 +6,12 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "sourceMap": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "paths": {
+            "@harmony-ai/shared": [
+                "../shared/src/index.ts"
+            ]
+        }
     },
     "include": [
         "src/**/*"
