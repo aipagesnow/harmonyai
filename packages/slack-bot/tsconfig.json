@@ -3,16 +3,10 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "ES2020",
-        "baseUrl": ".",
         "outDir": "./dist",
         "rootDir": "./src",
         "sourceMap": true,
-        "esModuleInterop": true,
-        "paths": {
-            "@harmony-ai/shared": [
-                "../shared/dist/index.d.ts"
-            ]
-        }
+        "esModuleInterop": true
     },
     "include": [
         "src/**/*"
