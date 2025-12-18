@@ -53,6 +53,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // 4. Pass to Bolt's Receiver
+        // Since we consumed the stream, we must restore it so Bolt's body-parser works
+        const newStream = new Readable();
+        newStream.push(rawBodyBuffer);
+        newStream.push(null);
+
+        // Copy all properties from the original request to the new stream
+        Object.assign(newStream, req);
+
+        // Rewrite URL to match Bolt's default endpoint expectation ('/slack/events')
+        // Next.js might give us '/api/slack/events'
+        if ((newStream as any).url && (newStream as any).url.startsWith('/api/slack/events')) {
+            (newStream as any).url = '/slack/events';
+        }
+
+        // Delegate to Bolt
         await receiver.requestHandler(newStream as any, res as any);
     } catch (error) {
         console.error("Error in Slack events handler:", error);
