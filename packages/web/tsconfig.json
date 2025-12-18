@@ -23,12 +23,16 @@
                 "name": "next"
             }
         ],
+        "baseUrl": ".",
         "paths": {
             "@/*": [
                 "./src/*"
             ],
             "@harmony-ai/slack-bot": [
                 "../slack-bot/src/app.ts"
+            ],
+            "@harmony-ai/shared": [
+                "../shared/dist/index.d.ts"
             ]
         }
     },
