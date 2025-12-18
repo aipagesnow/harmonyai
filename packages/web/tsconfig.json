@@ -26,6 +26,9 @@
         "paths": {
             "@/*": [
                 "./src/*"
+            ],
+            "@harmony-ai/slack-bot": [
+                "../slack-bot/src/app.ts"
             ]
         }
     },
