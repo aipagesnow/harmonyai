@@ -32,7 +32,7 @@
                 "../slack-bot/src/app.ts"
             ],
             "@harmony-ai/shared": [
-                "../shared/dist/index.d.ts"
+                "../shared/src/index.ts"
             ]
         }
     },
