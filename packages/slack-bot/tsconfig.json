@@ -10,7 +10,7 @@
         "esModuleInterop": true,
         "paths": {
             "@harmony-ai/shared": [
-                "../shared/src/index.ts"
+                "../shared/dist/index.d.ts"
             ]
         }
     },
