@@ -1,4 +1,4 @@
-import { receiver } from "@harmony-ai/slack-bot";
+// import { receiver } from "@harmony-ai/slack-bot"; // Dynamically imported
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Readable } from "stream";
 
@@ -41,30 +41,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(200).send(body.challenge);
             }
         } catch (e) {
-            // Ignore JSON parse errors, let Bolt handle invalid bodies if it wants
+            // Ignore JSON parse errors
         }
 
-        // 3. Pass to Bolt's Receiver
-        // Since we consumed the stream, we must restore it so Bolt's body-parser works
-        const newStream = new Readable();
-        newStream.push(rawBodyBuffer);
-        newStream.push(null);
-
-        // Copy all properties from the original request to the new stream
-        Object.assign(newStream, req);
-
-        // Rewrite URL to match Bolt's default endpoint expectation ('/slack/events')
-        // Next.js might give us '/api/slack/events'
-        if ((newStream as any).url && (newStream as any).url.startsWith('/api/slack/events')) {
-            (newStream as any).url = '/slack/events';
-        }
+        // 3. Dynamically import receiver to avoid top-level crashes if env vars are missing
+        const { receiver } = await import("@harmony-ai/slack-bot");
 
         if (!receiver) {
             console.error("Slack receiver is not initialized. Ensure NODE_ENV is production or HTTP mode is enabled.");
             return res.status(500).send("Internal Server Configuration Error");
         }
 
-        // Delegate to Bolt
+        // 4. Pass to Bolt's Receiver
         await receiver.requestHandler(newStream as any, res as any);
     } catch (error) {
         console.error("Error in Slack events handler:", error);
