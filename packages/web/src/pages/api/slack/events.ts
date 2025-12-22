@@ -9,12 +9,13 @@ const receiver = new ExpressReceiver({
 
 (async () => {
     const { app } = await import('@harmony-ai/slack-bot');
-    // @ts-ignore - Check for router or receiver.app
-    if (app.getRouter) {
-        // @ts-ignore
-        receiver.app.use(app.getRouter());
-    } else if (app.receiver && (app.receiver as any).app) {
-        receiver.app.use((app.receiver as any).app);
+    // Cast to any to bypass 'private property' TS checks
+    const boltApp = app as any;
+
+    if (boltApp.getRouter) {
+        receiver.app.use(boltApp.getRouter());
+    } else if (boltApp.receiver && boltApp.receiver.app) {
+        receiver.app.use(boltApp.receiver.app);
     }
 })();
 
