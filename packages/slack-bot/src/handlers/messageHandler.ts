@@ -5,28 +5,31 @@ import { alertService } from "../services/alertService";
 
 export function registerMessageHandlers(app: App) {
     app.message(async ({ message, say, context }) => {
-        // Filter out subtype messages (like channel_join, etc.) that don't have text
-        if ((message as any).subtype || !(message as any).text) {
+        const msg = message as any;
+
+        // 1. FILTER: Ignore bot messages, edits, deletions, thread broadcasts
+        // 'subtype' handles edits (message_changed), joins, leaves, etc.
+        // bot_id / bot_profile handles bot users
+        if (msg.subtype || msg.bot_id || msg.bot_profile) {
             return;
         }
 
-        const msg = message as any; // Cast for easier access properties
+        // Ignore messages without text
+        if (!msg.text) return;
 
         // Privacy: Only process public channels (though app.message triggers on anything the bot is in)
-        // We implicitly trust that if the bot is in a channel, it should monitor it.
-        // But explicitly check channel type if possible or needed.
-        // For now, Bolt's default behavior is fine, but we avoid DMs if not intended.
         if (msg.channel_type === 'im') {
             return; // Ignore DMs for monitoring
         }
 
         const text = msg.text;
 
-        // 1. Analyze
+        // 2. Analyze
         const analysis = await analyzeMessage(text);
 
-        // 2. Log (Aggregated)
-        await db.logSentiment(msg.team, msg.channel, analysis.sentimentScore, analysis.frictionDetected);
+        // 3. Log (Aggregated)
+        // message.ts is the timestamp ID of the message
+        await db.logSentiment(msg.team, msg.channel, analysis.sentimentScore, analysis.frictionDetected, msg.ts);
 
         // 3. Proactive Alerting
         const health = await db.getChannelHealth(msg.channel);

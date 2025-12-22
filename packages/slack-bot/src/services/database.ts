@@ -20,7 +20,7 @@ const getSupabase = (): SupabaseClient | null => {
 const mockChannelData: Record<string, ChannelHealth> = {};
 
 export const db = {
-    logSentiment: async (teamId: string, channelId: string, score: SentimentScore, friction: boolean) => {
+    logSentiment: async (teamId: string, channelId: string, score: SentimentScore, friction: boolean, messageTs?: string) => {
         const supabase = getSupabase();
         if (supabase) {
             const { error } = await supabase.from('sentiment_logs').insert({
@@ -28,6 +28,7 @@ export const db = {
                 channel_id: channelId,
                 sentiment_score: score,
                 friction_detected: friction,
+                message_ts: messageTs,
                 created_at: new Date().toISOString()
             });
             if (error) console.error("Supabase Log Error:", error);
