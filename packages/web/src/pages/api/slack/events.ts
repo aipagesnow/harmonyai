@@ -1,30 +1,22 @@
 import { HTTPReceiver } from '@slack/bolt';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Create the HTTPReceiver (official for serverless environments like Vercel)
+// Create the HTTPReceiver (official for serverless)
 const receiver = new HTTPReceiver({
     signingSecret: process.env.SLACK_SIGNING_SECRET!,
     processBeforeResponse: true, // Required for serverless
 });
 
-// Dynamically attach your existing Bolt app's router
+// Dynamically attach the public app.router
 (async () => {
     const { app } = await import('@harmony-ai/slack-bot');
-    // @ts-ignore - Assuming app has a router property or we might need to adjust this
-    if (app.router) {
-        // @ts-ignore
-        receiver.app.use(app.router);
-    } else if (app.receiver && (app.receiver as any).router) {
-        // Fallback for standard ExpressReceiver usage within Bolt App
-        // @ts-ignore
-        receiver.app.use((app.receiver as any).router);
-    }
+    receiver.app.use(app.router); // app.router is public
 })();
 
-// Export the receiver's request listener as the default handler
+// Export the receiver's request listener
 export default receiver.requestListener;
 
-// Disable Next.js body parsing — critical for Slack signature verification
+// Disable Next.js body parsing (required for signature verification)
 export const config = {
     api: {
         bodyParser: false,
