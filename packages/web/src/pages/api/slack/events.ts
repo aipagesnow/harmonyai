@@ -1,30 +1,30 @@
+import { HTTPReceiver } from '@slack/bolt';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-let boltApp: any = null;
+// Create the HTTPReceiver (official for serverless environments like Vercel)
+const receiver = new HTTPReceiver({
+    signingSecret: process.env.SLACK_SIGNING_SECRET!,
+    processBeforeResponse: true, // Required for serverless
+});
 
-async function getBoltApp() {
-    if (!boltApp) {
-        const { app } = await import('@harmony-ai/slack-bot');
-        boltApp = app;
+// Dynamically attach your existing Bolt app's router
+(async () => {
+    const { app } = await import('@harmony-ai/slack-bot');
+    // @ts-ignore - Assuming app has a router property or we might need to adjust this
+    if (app.router) {
+        // @ts-ignore
+        receiver.app.use(app.router);
+    } else if (app.receiver && (app.receiver as any).router) {
+        // Fallback for standard ExpressReceiver usage within Bolt App
+        // @ts-ignore
+        receiver.app.use((app.receiver as any).router);
     }
-    return boltApp;
-}
+})();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const app = await getBoltApp();
+// Export the receiver's request listener as the default handler
+export default receiver.requestListener;
 
-    try {
-        // Public method: handles signature verification, parsing, and routing
-        await app.processEvent(req, res);
-    } catch (error) {
-        console.error('Error processing Slack event:', error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    }
-}
-
-// Required for Slack signature verification (raw body)
+// Disable Next.js body parsing — critical for Slack signature verification
 export const config = {
     api: {
         bodyParser: false,
