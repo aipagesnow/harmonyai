@@ -45,10 +45,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // 3. Dynamically import receiver to avoid top-level crashes if env vars are missing
-        const { receiver } = await import("@harmony-ai/slack-bot");
+        // 3. Dynamically import app definition
+        const { app } = await import("@harmony-ai/slack-bot");
 
-        if (!receiver) {
-            console.error("Slack receiver is not initialized. Ensure NODE_ENV is production or HTTP mode is enabled.");
+        if (!app) {
+            console.error("Slack app is not initialized.");
             return res.status(500).send("Internal Server Configuration Error");
         }
 
@@ -67,8 +68,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             (newStream as any).url = '/slack/events';
         }
 
-        // Delegate to Bolt
-        await receiver.requestHandler(newStream as any, res as any);
+        // Delegate to Bolt via public requestListener
+        await app.receiver.requestListener(newStream as any, res as any);
     } catch (error) {
         console.error("Error in Slack events handler:", error);
         res.status(500).send("Internal Server Error");
