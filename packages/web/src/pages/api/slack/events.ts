@@ -1,35 +1,36 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ExpressReceiver } from '@slack/bolt';
 import rawBody from 'raw-body';
 
-const receiver = new ExpressReceiver({
-    signingSecret: process.env.SLACK_SIGNING_SECRET!,
-    processBeforeResponse: true, // Required for serverless
-});
+let boltApp: any = null;
 
-(async () => {
-    const { app } = await import('@harmony-ai/slack-bot');
-    // @ts-ignore - Check for router or receiver.app
-    if (app.getRouter) {
-        // @ts-ignore
-        receiver.app.use(app.getRouter());
-    } else if (app.receiver && (app.receiver as any).app) {
-        receiver.app.use((app.receiver as any).app);
+async function getBoltApp() {
+    if (!boltApp) {
+        const { app } = await import('@harmony-ai/slack-bot');
+        boltApp = app;
     }
-})();
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'POST') {
-        // Manual raw body reading to bypass Next.js parsing and ensure correct signature
-        const buf = await rawBody(req);
-        (req as any).body = buf.toString();
-        req.headers['content-type'] = 'application/json';
-    }
-
-    // ExpressReceiver exposes the express app as 'app'
-    await receiver.app(req as any, res as any);
+    return boltApp;
 }
 
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    // Manual raw body reading to guarantee correct payload for signature verification
+    if (req.method === 'POST') {
+        const buffer = await rawBody(req);
+        (req as any).body = buffer.toString();
+    }
+
+    const app = await getBoltApp();
+
+    try {
+        await app.processEvent(req, res);
+    } catch (error) {
+        console.error('Error processing Slack event:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Internal Server Error');
+        }
+    }
+}
+
+// Disable Next.js body parsing (required for rawBody to work)
 export const config = {
     api: {
         bodyParser: false,
