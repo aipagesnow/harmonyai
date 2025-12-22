@@ -1,18 +1,29 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ExpressReceiver } from '@slack/bolt';
 
-const receiver = new ExpressReceiver({
-    signingSecret: process.env.SLACK_SIGNING_SECRET!,
-    processBeforeResponse: true, // Required for serverless
-});
+let boltApp: any = null;
 
-(async () => {
-    const { app } = await import('@harmony-ai/slack-bot');
-    receiver.app.use(app.getRouter()); // app.getRouter() is public
-})();
+async function getBoltApp() {
+    if (!boltApp) {
+        const { app } = await import('@harmony-ai/slack-bot');
+        boltApp = app;
+    }
+    return boltApp;
+}
 
-export default receiver.requestListener;
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const app = await getBoltApp();
 
+    try {
+        await app.processEvent(req, res);
+    } catch (error) {
+        console.error('Error processing Slack event:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Internal Server Error');
+        }
+    }
+}
+
+// Critical: disable Next.js body parsing for Slack signature verification
 export const config = {
     api: {
         bodyParser: false,
