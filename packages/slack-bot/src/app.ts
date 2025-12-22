@@ -46,8 +46,7 @@ registerCommands(app);
 registerModalHandlers(app);
 
 // Export for Vercel / Cloud Functions
-const receiver = app.receiver as ExpressReceiver;
-export { app, receiver };
+export { app };
 
 // Only start locally if this file is run directly (not imported)
 if (require.main === module) {
