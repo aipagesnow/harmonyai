@@ -15,12 +15,14 @@
         "@supabase/supabase-js": "^2.33.1",
         "lucide-react": "^0.268.0",
         "next": "^16.0.10",
+        "raw-body": "^3.0.2",
         "react": "^18.3.0",
         "react-dom": "^18.3.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.0.0",
         "@types/node": "^20.5.0",
+        "@types/raw-body": "^2.1.4",
         "@types/react": "^18.3.0",
         "autoprefixer": "^10.4.15",
         "eslint": "^9.0.0",
