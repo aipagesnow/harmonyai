@@ -4,8 +4,7 @@ import { db } from "../services/database";
 export function registerCommands(app: App) {
     // Handle /harmony-pulse slash command
     app.command('/harmony-pulse', async ({ command, ack, say }) => {
-        // Acknowledge immediately to prevent timeout/dispatch_failed
-        await ack();
+        await ack(); // Immediate acknowledgment
 
         try {
             console.log('🔥 /harmony-pulse triggered by', command.user_id, 'in channel', command.channel_id);
@@ -37,18 +36,27 @@ export function registerCommands(app: App) {
 
     // Handle /harmony slash command (optional fallback)
     app.command('/harmony', async ({ command, ack, respond }) => {
-        await ack();
-        console.log('🔥 /harmony triggered by', command.user_id);
+        await ack(); // Immediate acknowledgment
 
-        await respond({
-            response_type: 'ephemeral',
-            text: 'HarmonyAI received /harmony — use `/harmony-pulse` for the latest check! 🌟'
-        });
+        try {
+            console.log('🔥 /harmony triggered by', command.user_id);
+
+            await respond({
+                response_type: 'ephemeral',
+                text: 'HarmonyAI received /harmony — use `/harmony-pulse` for the latest check! 🌟'
+            });
+        } catch (error) {
+            console.error('Harmony command error:', error);
+            await respond({
+                response_type: 'ephemeral',
+                text: "Sorry, something went wrong with the command."
+            });
+        }
     });
 
     // Legacy /harmony with subcommands (keeping for backward compatibility)
     app.command("/harmony-legacy", async ({ command, ack, respond }) => {
-        await ack();
+        await ack(); // Immediate acknowledgment
 
         try {
             // Parse subcommands: pulse, status, help, forecast, plan
