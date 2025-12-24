@@ -13,8 +13,12 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const app = new App({
+const receiver = new ExpressReceiver({
     signingSecret: process.env.SLACK_SIGNING_SECRET!,
+});
+
+const app = new App({
+    receiver,
     authorize: async ({ teamId }) => {
         if (!teamId) {
             throw new Error('Missing teamId in authorize');
@@ -46,7 +50,7 @@ registerCommands(app);
 registerModalHandlers(app);
 
 // Export for Vercel / Cloud Functions
-export { app };
+export { app, receiver };
 
 // Only start locally if this file is run directly (not imported)
 if (require.main === module) {
