@@ -7,26 +7,27 @@ export function registerCommands(app: App) {
         await ack(); // Immediate acknowledgment
 
         try {
-            console.log('🔥 /harmony-pulse triggered by', command.user_id, 'in channel', command.channel_id);
+            // Initialize Supabase (or import a detailed client)
+            const { createClient } = require('@supabase/supabase-js');
+            const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
             // Async work: query sentiment_logs for command.channel_id
-            const health = await db.getChannelHealth(command.channel_id);
+            const { data: logs } = await supabase
+                .from('sentiment_logs')
+                .select('sentiment_score, friction_detected')
+                .eq('channel_id', command.channel_id)
+                .order('created_at', { ascending: false })
+                .limit(50);
 
-            if (!health) {
-                await say("I haven't collected enough data for this channel yet to calculate a pulse. Keep chatting! 💬");
+            if (!logs || logs.length === 0) {
+                await say('No messages analyzed yet in this channel — post a few and try again!');
                 return;
             }
 
-            let statusEmoji = "🟢";
-            if (health.sentimentScore < -0.3) statusEmoji = "🔴";
-            else if (health.sentimentScore < 0.2) statusEmoji = "🟡";
+            const average = logs.reduce((sum: number, log: any) => sum + log.sentiment_score, 0) / logs.length;
+            const frictionCount = logs.filter((log: any) => log.friction_detected).length;
 
-            const frictionMsg = health.frictionDetected
-                ? "\n⚠️ *Note:* I detected some potential friction recently."
-                : "";
-
-            // Send visible response to channel
-            await say(`*Channel Pulse: ${statusEmoji}*\nCurrent Vibe Score: ${health.sentimentScore.toFixed(2)}${frictionMsg} \n_Scores range from -1 (Negative) to +1 (Positive)_`);
+            await say(`*Channel Harmony Pulse*\nAverage sentiment: ${average.toFixed(2)}\nFriction detected in ${frictionCount} of last ${logs.length} messages`);
 
         } catch (error) {
             console.error('Pulse error:', error);
