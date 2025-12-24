@@ -40,7 +40,9 @@ const app = new App({
             botUserId: data.bot_user_id ?? undefined,
         };
     },
-    logLevel: LogLevel.INFO,
+    // Serverless: Process before sending response to avoid timeouts
+    processBeforeResponse: true,
+    logLevel: LogLevel.DEBUG,
 });
 
 // Register Event Listeners
