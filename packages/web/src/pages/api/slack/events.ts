@@ -13,15 +13,19 @@ async function getBoltApp() {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
-        // Manual raw body reading to bypass Next.js parsing and ensure correct signature
         const buf = await rawBody(req);
         const raw = buf.toString();
 
-        // Bolt needs BOTH:
-        // 1. .rawBody (string) for signature verification
-        // 2. .body (object) for event routing/types
         (req as any).rawBody = raw;
-        (req as any).body = JSON.parse(raw);
+
+        if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+            // Parse URL-encoded body (Slash Commands)
+            const querystring = require('querystring');
+            (req as any).body = querystring.parse(raw);
+        } else {
+            // Parse JSON body (Events API)
+            (req as any).body = JSON.parse(raw);
+        }
     }
 
     const app = await getBoltApp();
