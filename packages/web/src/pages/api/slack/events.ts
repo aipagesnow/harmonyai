@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         (req as any).rawBody = raw;
 
-        if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
             // Parse URL-encoded body (Slash Commands)
             const querystring = require('querystring');
             (req as any).body = querystring.parse(raw);
