@@ -22,10 +22,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Parse URL-encoded body (Slash Commands)
             const querystring = require('querystring');
             (req as any).body = querystring.parse(raw);
+            console.log('DEBUG: Parsed form-urlencoded body keys:', Object.keys((req as any).body));
         } else {
             // Parse JSON body (Events API)
             (req as any).body = JSON.parse(raw);
+            console.log('DEBUG: Parsed JSON body keys:', Object.keys((req as any).body));
         }
+        console.log('DEBUG: Content-Type:', req.headers['content-type']);
     }
 
     const app = await getBoltApp();

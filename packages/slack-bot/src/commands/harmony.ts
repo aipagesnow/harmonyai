@@ -9,6 +9,7 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SE
 export function registerCommands(app: App) {
     // Handle /harmony-pulse slash command
     app.command('/harmony-pulse', async ({ command, ack, say }) => {
+        console.log('DEBUG: /harmony-pulse entered. typeof ack:', typeof ack);
         await ack(); // Immediate acknowledgment — prevents dispatch_failed
 
         try {
