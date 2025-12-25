@@ -41,7 +41,6 @@ const app = new App({
         };
     },
     // Serverless: Process before sending response to avoid timeouts
-    processBeforeResponse: true,
     logLevel: LogLevel.DEBUG,
 });
 
