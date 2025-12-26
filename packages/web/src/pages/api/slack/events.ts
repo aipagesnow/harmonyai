@@ -4,19 +4,25 @@ import rawBody from 'raw-body';
 
 const receiver = new ExpressReceiver({
     signingSecret: process.env.SLACK_SIGNING_SECRET!,
-    processBeforeResponse: true,
+    processBeforeResponse: true, // Required for serverless
 });
 
 (async () => {
     const { app } = await import('@harmony-ai/slack-bot');
-    receiver.app.use(app.getRouter());
+    // Use processEvent in middleware to route events to your app's listeners
+    receiver.app.use(async (req, res, next) => {
+        try {
+            await app.processEvent(req, res);
+        } catch (error) {
+            next(error);
+        }
+    });
 })();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         const buffer = await rawBody(req);
         (req as any).rawBody = buffer.toString();
-        req.headers['content-type'] = 'application/json';
     }
 
     await receiver.requestListener(req, res);
