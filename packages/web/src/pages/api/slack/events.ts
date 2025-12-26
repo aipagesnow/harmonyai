@@ -19,6 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const receiver = await getReceiver();
 
+    // Rewrite the URL to match what ExpressReceiver expects (defaults to /slack/events)
+    req.url = '/slack/events';
+
     // Call the underlying Express app directly
     receiver.app(req, res);
 }
