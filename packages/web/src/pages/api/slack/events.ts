@@ -1,46 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { ExpressReceiver } from '@slack/bolt';
 import rawBody from 'raw-body';
 
-let boltApp: any = null;
+const receiver = new ExpressReceiver({
+    signingSecret: process.env.SLACK_SIGNING_SECRET!,
+    processBeforeResponse: true,
+});
 
-async function getBoltApp() {
-    if (!boltApp) {
-        const { app } = await import('@harmony-ai/slack-bot');
-        boltApp = app;
-    }
-    return boltApp;
-}
+(async () => {
+    const { app } = await import('@harmony-ai/slack-bot');
+    receiver.app.use(app.getRouter());
+})();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         const buffer = await rawBody(req);
-
-        // Raw string for signature verification
         (req as any).rawBody = buffer.toString();
-
-        // Parsed object for event.type and command parsing
-        const contentType = req.headers['content-type'] || '';
-        if (contentType.includes('application/json')) {
-            (req as any).body = JSON.parse(buffer.toString());
-        } else if (contentType.includes('application/x-www-form-urlencoded')) {
-            const params = new URLSearchParams(buffer.toString());
-            (req as any).body = Object.fromEntries(params);
-        } else {
-            console.error('Unsupported Content-Type:', contentType);
-            return res.status(400).send('Unsupported Content-Type');
-        }
+        req.headers['content-type'] = 'application/json';
     }
 
-    const app = await getBoltApp();
-
-    try {
-        await app.processEvent(req, res);
-    } catch (error) {
-        console.error('Error processing Slack event:', error);
-        if (!res.headersSent) {
-            res.status(500).send('Internal Server Error');
-        }
-    }
+    await receiver.requestListener(req, res);
 }
 
 export const config = {
