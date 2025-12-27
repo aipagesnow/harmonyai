@@ -30,7 +30,7 @@ export async function analyzeMessage(text: string): Promise<AnalysisResult> {
     }
     lastCallTime = Date.now();
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
     Analyze the following Slack message for sentiment and potential workplace friction.
