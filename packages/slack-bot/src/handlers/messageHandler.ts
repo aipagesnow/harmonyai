@@ -7,6 +7,8 @@ export function registerMessageHandlers(app: App) {
     app.message(async ({ message, say, context }) => {
         const msg = message as any;
 
+        console.log('DEBUG: Message event received', msg.ts, msg.text?.substring(0, 50));
+
         // 1. FILTER: Ignore bot messages, edits, deletions, thread broadcasts
         // 'subtype' handles edits (message_changed), joins, leaves, etc.
         // bot_id / bot_profile handles bot users
@@ -24,17 +26,23 @@ export function registerMessageHandlers(app: App) {
 
         const text = msg.text;
 
-        // 2. Analyze
-        const analysis = await analyzeMessage(text);
+        try {
+            // 2. Analyze
+            const analysis = await analyzeMessage(text);
+            console.log('DEBUG: Gemini analysis', analysis);
 
-        // 3. Log (Aggregated)
-        // message.ts is the timestamp ID of the message
-        await db.logSentiment(msg.team, msg.channel, analysis.sentimentScore, analysis.frictionDetected, msg.ts);
+            // 3. Log (Aggregated)
+            // message.ts is the timestamp ID of the message
+            await db.logSentiment(msg.team, msg.channel, analysis.sentimentScore, analysis.frictionDetected, msg.ts);
+            console.log('DEBUG: Inserted sentiment log for', msg.ts);
 
-        // 3. Proactive Alerting
-        const health = await db.getChannelHealth(msg.channel);
-        if (health) {
-            await alertService.checkAlerts(app, msg.team, msg.channel, health);
+            // 3. Proactive Alerting
+            const health = await db.getChannelHealth(msg.channel);
+            if (health) {
+                await alertService.checkAlerts(app, msg.team, msg.channel, health);
+            }
+        } catch (error) {
+            console.error('DEBUG: Message analysis error', error);
         }
     });
 }
