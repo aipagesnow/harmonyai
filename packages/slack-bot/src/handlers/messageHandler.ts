@@ -7,7 +7,13 @@ export function registerMessageHandlers(app: App) {
     app.message(async ({ message, say, context }) => {
         const msg = message as any;
 
-        console.log('DEBUG: Message event received', msg.ts, msg.text?.substring(0, 50));
+        console.log('DEBUG: Message event received', {
+            ts: msg.ts,
+            channel: msg.channel,
+            text: msg.text?.substring(0, 50),
+            subtype: msg.subtype,
+            bot_id: msg.bot_id,
+        });
 
         // 1. FILTER: Ignore bot messages, edits, deletions, thread broadcasts
         // 'subtype' handles edits (message_changed), joins, leaves, etc.

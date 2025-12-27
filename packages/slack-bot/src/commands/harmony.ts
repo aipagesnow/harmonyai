@@ -10,8 +10,8 @@ export function registerCommands(app: App) {
     // Handle /harmony-pulse slash command
     // Handle /harmony-pulse slash command
     app.command('/harmony-pulse', async (args) => {
-        const { command, ack, say } = args;
-        console.log('DEBUG: /harmony-pulse entered. Args keys:', Object.keys(args));
+        const { command, ack, say, respond, client } = args;
+        console.log('DEBUG: /harmony-pulse handler entered. args keys:', Object.keys({ command, ack, say, respond, client }));
         console.log('DEBUG: typeof ack:', typeof ack);
         console.log('DEBUG: command:', JSON.stringify(command));
 
